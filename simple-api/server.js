@@ -17,6 +17,7 @@ function generateInitialData() {
 				description: `part ${j} of widget ${i}`
 			})
 		}
+		data.push(item)
 	}
 	return data
 }

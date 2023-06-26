@@ -2,18 +2,25 @@ const express = require('express')
 
 const router = express.Router()
 
-
 router.get('/widgets', (req, res, next) => {
 	let { filterField, filterContent, pageNo, pageSize, sortField, sortOrder } = req.query
-	let widgets = { ...res.app.locals.widgets }
+	let widgets = [ ...res.app.locals.widgets ]
 	let count = widgets.length
 	widgets.forEach(e => delete e['parts'])
 	if (filterField && filterContent) {
-		widgets = widgets.filter(e => e[filterField] === filterContent)
+		widgets = widgets.filter(e => e[filterField].includes(filterContent))
 	}
 	if (sortField && sortOrder) {
 		let order = sortOrder === 'ASC' ? 1 : -1
-		widgets = widgets.sort((a, b) => (a[sortField] - b[sortField]) * order)
+		widgets = widgets.sort((a, b) => {
+			if (a[sortField] > b[sortField]) {
+				return order
+			}
+			if (a[sortField] < b[sortField]) {
+				return -1 * order
+			}
+			return 0
+		})
 	}
 	if (pageNo) {
 		const page = parseInt(pageNo)
@@ -21,7 +28,7 @@ router.get('/widgets', (req, res, next) => {
 		if (pageSize) {
 			size = parseInt(pageSize)
 		}
-		widgets = widgets.slice(page * size, size)
+		widgets = widgets.slice(page * size, (page + 1) * size)
 	}
 	res.status(200).json({ data: widgets, count })
 })
@@ -69,8 +76,8 @@ router.delete('/widgets/:wid', (req, res, next) => {
 // we ommit sorting, paging and filtering for simplicity
 router.get('/widgets/:wid/parts', (req, res, next) => {
 	const id = parseInt(req.params.wid)
-	const widgetIndex = res.app.locals.widgets.findIndex(e => e.id === id)
-	if (widgetIndex !== -1) {
+	const widget = res.app.locals.widgets.find(e => e.id === id)
+	if (widget) {
 		res.status(200).json({ data: widget.parts, count: widget.parts.length })			
 	} else {
 		res.status(404).json({ message: 'not found' })
@@ -89,10 +96,53 @@ router.post('/widgets/:wid/parts', (req, res, next) => {
 })
 
 router.get('/widgets/:wid/parts/:pid', (req, res, next) => {
-
+	const wid = parseInt(req.params.wid)
+	const pid = parseInt(req.params.pid)
+	const widget = res.app.locals.widgets.find(e => e.id === wid)
+	if (widget) {
+		const part = widget.parts.find(e => e.id === pid)
+		if (part) {
+			res.status(200).json(part)
+		}	else {
+			res.status(404).json({ message: 'not found' })
+		}		
+	} else {
+		res.status(404).json({ message: 'not found' })
+	}
 })
 
-router.put('/widgets/:wid/parts/:pid', (req, res, next) => {})
-router.delete('/widgets/:wid/parts/:pid', (req, res, next) => {})
+router.put('/widgets/:wid/parts/:pid', (req, res, next) => {
+	const wid = parseInt(req.params.wid)
+	const pid = parseInt(req.params.pid)
+	const widgetIndex = res.app.locals.widgets.findIndex(e => e.id === wid)
+	if (widgetIndex !== -1) {
+		const partIndex = res.app.locals.widgets[widgetIndex].parts.findIndex(e => e.id === pid)
+		if (partIndex !== -1) {
+			res.app.locals.widgets[widgetIndex].parts[partIndex].description = req.body.description
+			res.status(202).json({ message: 'accepted' })
+		}	else {
+			res.status(404).json({ message: 'not found' })
+		}		
+	} else {
+		res.status(404).json({ message: 'not found' })
+	}
+})
+
+router.delete('/widgets/:wid/parts/:pid', (req, res, next) => {
+	const wid = parseInt(req.params.wid)
+	const pid = parseInt(req.params.pid)
+	const widgetIndex = res.app.locals.widgets.findIndex(e => e.id === wid)
+	if (widgetIndex !== -1) {
+		const partIndex = res.app.locals.widgets[widgetIndex].parts.findIndex(e => e.id === pid)
+		if (partIndex !== -1) {
+			res.app.locals.widgets[widgetIndex].parts.splice(partIndex, 1)
+			res.status(202).json({ message: 'accepted' })
+		}	else {
+			res.status(404).json({ message: 'not found' })
+		}		
+	} else {
+		res.status(404).json({ message: 'not found' })
+	}
+})
 
 module.exports = router
