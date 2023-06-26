@@ -1,6 +1,6 @@
 /*
-* a simple chat server, operating at socket level
-* node abstracts socket communication and thread handling
+simple chat server, operating at socket level
+node abstracts socket communication and thread handling
 */
 const net = require('net')
 

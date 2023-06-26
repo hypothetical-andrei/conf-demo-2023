@@ -2,6 +2,11 @@ const express = require('express')
 
 const router = express.Router()
 
+// get all widgets, with support for filtering, paging and sorting
+// in order to sort widgets, sortField and sortOrder must be provided
+// in order to filter widgets, filterField and filterCotent must be provided
+// in order to get a certain page, pageNo must be provided
+// pageSize can be provided, but defaults to 10
 router.get('/widgets', (req, res, next) => {
 	let { filterField, filterContent, pageNo, pageSize, sortField, sortOrder } = req.query
 	let widgets = [ ...res.app.locals.widgets ]
@@ -33,6 +38,7 @@ router.get('/widgets', (req, res, next) => {
 	res.status(200).json({ data: widgets, count })
 })
 
+// add a widget
 router.post('/widgets', (req, res, next) => {
 	const widget = req.body
 	widget.parts = []
@@ -40,6 +46,9 @@ router.post('/widgets', (req, res, next) => {
 	res.status(201).json({ message: 'created' })
 })
 
+// get a particular widget
+// the widget is specified with a path parameter
+// if not found a 404 code is returned
 router.get('/widgets/:wid', (req, res, next) => {
 	const id = parseInt(req.params.wid)
 	const widget = res.app.locals.widgets.find(e => e.id === id)
@@ -51,6 +60,9 @@ router.get('/widgets/:wid', (req, res, next) => {
 	}
 })
 
+// update a particular widget
+// the widget is specified with a path parameter
+// if not found a 404 code is returned
 router.put('/widgets/:wid', (req, res, next) => {
 	const id = parseInt(req.params.wid)
 	const widgetIndex = res.app.locals.widgets.findIndex(e => e.id === id)
@@ -62,6 +74,9 @@ router.put('/widgets/:wid', (req, res, next) => {
 	}
 })
 
+// delete a particular widget
+// the widget is specified with a path parameter
+// if not found a 404 code is returned
 router.delete('/widgets/:wid', (req, res, next) => {
 	const id = parseInt(req.params.wid)
 	const widgetIndex = res.app.locals.widgets.findIndex(e => e.id === id)
@@ -73,6 +88,9 @@ router.delete('/widgets/:wid', (req, res, next) => {
 	}
 })
 
+// get all parts of a particular widget
+// the widget is specified with a path parameter
+// if the parent is not found a 404 code is returned
 // we ommit sorting, paging and filtering for simplicity
 router.get('/widgets/:wid/parts', (req, res, next) => {
 	const id = parseInt(req.params.wid)
@@ -84,6 +102,9 @@ router.get('/widgets/:wid/parts', (req, res, next) => {
 	}
 })
 
+// add a part a particular widget
+// the widget is specified with a path parameter
+// if the parent is not found a 404 code is returned
 router.post('/widgets/:wid/parts', (req, res, next) => {
 	const id = parseInt(req.params.wid)
 	const widgetIndex = res.app.locals.widgets.findIndex(e => e.id === id)
@@ -95,6 +116,9 @@ router.post('/widgets/:wid/parts', (req, res, next) => {
 	}
 })
 
+// get a particular a part of a particular widget
+// the widget and part are specified as path parameters
+// if the parent or the child are not found a 404 code is returned
 router.get('/widgets/:wid/parts/:pid', (req, res, next) => {
 	const wid = parseInt(req.params.wid)
 	const pid = parseInt(req.params.pid)
@@ -111,6 +135,9 @@ router.get('/widgets/:wid/parts/:pid', (req, res, next) => {
 	}
 })
 
+// modify a part of a particular widget
+// the widget and part are specified as path parameters
+// if the parent or the child are not found a 404 code is returned
 router.put('/widgets/:wid/parts/:pid', (req, res, next) => {
 	const wid = parseInt(req.params.wid)
 	const pid = parseInt(req.params.pid)
@@ -128,6 +155,9 @@ router.put('/widgets/:wid/parts/:pid', (req, res, next) => {
 	}
 })
 
+// delete a part of a particular widget
+// the widget and part are specified as path parameters
+// if the parent or the child are not found a 404 code is returned
 router.delete('/widgets/:wid/parts/:pid', (req, res, next) => {
 	const wid = parseInt(req.params.wid)
 	const pid = parseInt(req.params.pid)

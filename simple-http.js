@@ -1,3 +1,6 @@
+/*
+a simple http server, operating with requests
+*/
 const http = require('http')
 const url = require('url')
 
@@ -15,4 +18,5 @@ httpServer.on('request', (req, res) => {
 	res.end('got it!')
 })
 
+// the served binds to a port and waits for client requests
 httpServer.listen(8080)
